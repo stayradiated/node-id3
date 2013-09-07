@@ -1,13 +1,19 @@
 {
   "name": "id3",
   "description": "A ID3 library for node, using pure Javascript.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Tim Smart",
-  "contributors": ["Marek Będkowski <marek@bedkowski.pl> (http://thejsteam.com)"],
-  "engine": [ "node >=0.2.0" ],
+  "contributors": [
+    "George Czabania <george@czabania.com>",
+    "Marek Będkowski <marek@bedkowski.pl> (http://thejsteam.com)"
+  ],
+  "engine": [
+    "node >=0.2.0"
+  ],
   "dependencies": {
     "strtok": ">=0.1.0",
-    "iconv-lite": ">=0.2.11"
+    "iconv-lite": ">=0.2.11",
+    "when": "~2.3.0"
   },
-  "main": "lib/id3"
+  "main": "node/id3"
 }
