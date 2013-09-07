@@ -31,41 +31,55 @@ class Stream
       deferred.resolve()
     return deferred.promise
 
-  # Return an inclusive range
   range: (start, end) ->
     byte = end - start
     @load(byte).then =>
       return @data[start..end]
 
-  getByte: (offset) ->
-    @load(offset).then =>
-      return @data[offset]
 
-  isBitSet: (offset, bit, sync) ->
-    # Sync
-    if sync then return (@data[offset]  & (1 << bit)) isnt 0
-    # Async
-    @getByte(offset).then (byte) -> return (byte & (1 << bit)) isnt 0
+  # GET BYTE
+  
+  getByteSync: (offset) ->
+    return @data[offset]
+
+  getByte: (offset) ->
+    @load(offset).then => @getByteSync(offset)
+
+
+  # IS BIT SET
+
+  isBitSetSync: (offset, bit) ->
+    return (@data[offset]  & (1 << bit)) isnt 0
+
+  isBitSet: (offset) ->
+    @load(offset).then => @isBitSetSync(offset)
+
+
+  # FIND ZERO
+
+  findZeroSync: (start, end) ->
+    while @data[start] isnt 0
+      if start++ >= end then return end
+    return start
 
   findZero: (start, end) ->
-    @load(end).then =>
-      i = start
-      while @data[i] isnt 0
-        if i >= end
-          return end
-        i  += 1
-      return i
+    @load(end).then => @findZeroSync(start, end)
 
-  getInt: (offset, bigEndian) ->
-    Promise.all [
-      @getByte(offset)
-      @getByte(offset + 1)
-      @getByte(offset + 2)
-    ], ([byte1, byte2, byte3]) ->
-      int = if bigEndian then (((byte1 << 8) + byte2) << 8) + byte3 else
-                              (((byte3 << 8) + byte2) << 8) + byte1
+
+  # GET INT
+
+  getIntSync: (offset, bigEndian) ->
+      int = if bigEndian then (((bytes[1] << 8) + bytes[2]) << 8) + bytes[3] else
+                              (((bytes[3] << 8) + bytes[2]) << 8) + bytes[1]
       if int < 0 then int += 16777216
       return int
+
+  getInt: (offset, bigEndian) ->
+    @range(offset, offset + 2).then (bytes) =>
+      @getIntSync(offset, bigEndian)
+
+
+  # DECODE STRING
 
   decodeString: (charset, start, end) ->
     @load(end).then ->
@@ -86,5 +100,18 @@ class Stream
           text = @data.toString(charset, start, end)
           text:   text,
           length: Buffer.byteLength(text)
+
+
+  # STRTOK.UINT32_BE
+
+  UINT32_BE_SYNC: (offset) ->
+    return ((@data[offset] << 23) * 2) + (
+      (@data[offset + 1] << 16) |
+      (@data[offset + 2] << 8)  |
+      (@data[offset + 3]))
+
+  UINT32_BE: (offset) ->
+    @load(offset + 3).then >
+      @UINT32_BE_SYNC(offset)
 
 module.exports = Stream

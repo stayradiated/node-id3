@@ -22,4 +22,5 @@ readData = (stream, type, offset, length, flags, major=3) ->
           pic.format = pic.format.text
 
 
-
+module.exports =
+  readData: readData
