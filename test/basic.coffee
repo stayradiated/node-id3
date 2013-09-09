@@ -1,8 +1,13 @@
-ID3 = require '../node/id3'
+ID3 = require '../lib_stream/id3'
+fs = require 'fs'
 
-# id3_3v1 = new ID3 "#{ __dirname }/sample3v1.mp3"
-id3_3v2 = new ID3 "#{ __dirname }/sample3v2.mp3"
-# id3_4   = new ID3 "#{ __dirname }/sample4.m4a"
+path = "/home/stayrad/Projects/Groovy/cache/1342693.mp3"
 
-id3_3v2.on 'ready', ->
-  id3_3v2.parse()
+file = new ID3(path)
+file.on 'ready', ->
+  file.parse().then ->
+    console.log file
+
+# Writing to an arbitrary position in a file is possible!
+# 
+# fs.write(path, data, data_i, data_length, fs_position)
